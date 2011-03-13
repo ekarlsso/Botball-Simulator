@@ -15,8 +15,13 @@ object ClockSpecs extends Specification {
       val clock = Actor.actorOf[Clock]
       clock.start
 
-      var option = clock !! (new GetCurrentTime, 1000)
-      //option.getOrElse()
+      val result = clock !! (new GetCurrentTime, 1000)
+      result must beSomething
+
+      /*
+      val timeTick:TimeTick = result.getOrElse(throw new Exception())
+      timeTick.time must_== 0
+      */
     }
   }
 }

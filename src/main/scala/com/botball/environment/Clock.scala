@@ -3,8 +3,8 @@ package com.botball.environment
 import se.scalablesolutions.akka.actor._
 
 
-case class TimeTick(value:Long)
-case class GetCurrentTime(actor:Actor)
+case class TimeTick(time:Long)
+case class GetCurrentTime
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,8 +22,7 @@ class Clock extends Actor {
 
   def receive = {
     case event: GetCurrentTime =>
-      reply(TimeTick(currentTime))
-
+      self.reply(TimeTick(currentTime))
     case _ => log.error("Clock got unknown message")
   }
 
