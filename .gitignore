@@ -1,0 +1,9 @@
+*.class
+*.log
+
+#sbt tool
+dist/*
+target/
+project/boot/
+project/plugins/project/
+lib_managed/
