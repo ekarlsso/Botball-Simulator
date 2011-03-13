@@ -2,7 +2,6 @@ package com.botball.environment
 
 import se.scalablesolutions.akka.actor._
 
-
 case class TimeTick(time:Long)
 case class GetCurrentTime
 
@@ -13,7 +12,6 @@ case class GetCurrentTime
  * Time: 7:42 PM
  * To change this template use File | Settings | File Templates.
  */
-
 class Clock extends Actor {
 
   private var running = false

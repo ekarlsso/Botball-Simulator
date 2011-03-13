@@ -16,12 +16,11 @@ object ClockSpecs extends Specification {
       clock.start
 
       val result = clock !! (new GetCurrentTime, 1000)
-      result must beSomething
 
-      /*
-      val timeTick:TimeTick = result.getOrElse(throw new Exception())
-      timeTick.time must_== 0
-      */
+      result match {
+        case Some(TimeTick(time)) => time must_== 0
+        case _ => fail("Not returning TimeTick(time)")
+      }
     }
   }
 }
