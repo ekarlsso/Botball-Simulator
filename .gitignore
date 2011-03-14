@@ -1,7 +1,9 @@
 *.class
 *.log
+*.iml
 
 #sbt tool
+.idea/
 dist/*
 target/
 project/boot/
