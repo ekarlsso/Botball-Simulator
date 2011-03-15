@@ -1,9 +1,12 @@
 package com.botball.environment
 
-import se.scalablesolutions.akka.actor._
+import akka.actor._
 
+case class ClockNotStarted()
+case class StartClock(initialTime:Long)
 case class TimeTick(time:Long)
-case class GetCurrentTime
+case class GetCurrentTime()
+case class AddSimulant(simulant:ActorRef)
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,12 +19,35 @@ class Clock extends Actor {
 
   private var running = false
   private var currentTime:Long = 0;
-  private var simulants:List[Actor] = List()
+  private var simulants:List[ActorRef] = List()
 
-  def receive = {
-    case event: GetCurrentTime =>
-      self.reply(TimeTick(currentTime))
-    case _ => log.error("Clock got unknown message")
+  def addSimulant(simulant:ActorRef) = {
+    simulants = simulant :: simulants
+  }
+  
+  def sendTimeTick() {
+    simulants.foreach( (a:ActorRef) => {a ! TimeTick(currentTime)})
   }
 
+  def receive = {
+    case StartClock(initialTime) =>
+      if (!running) {
+        running = true
+        currentTime = initialTime
+        sendTimeTick()
+      }
+
+    case AddSimulant(simulant) => 
+      addSimulant(simulant)
+
+    case GetCurrentTime =>
+      if (running) {
+        self.reply(TimeTick(currentTime))
+      } else {
+        self.reply(ClockNotStarted)
+      }
+      
+    case _ => log.error("Clock got unknown message")
+  }
 }
+
