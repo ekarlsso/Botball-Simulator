@@ -17,7 +17,7 @@ class SceneSpecAsTests extends JUnit4(ClockSpecs)
 object SceneSpecs extends Specification with Mockito {
 
   "The Scene" should {
-    "Advance scene with the time tick" in {
+    "Advance nodes inside the scene with time tick" in {
       val scene = new Scene
       val node1Mock = mock[Node]
       val node2Mock = mock[Node]
@@ -25,7 +25,7 @@ object SceneSpecs extends Specification with Mockito {
       scene.registerNode(node1Mock)
       scene.registerNode(node2Mock)
 
-      scene.advanceSimulation(0,0)
+      scene.advanceSimulation(0)
 
       there was one(node1Mock).applyControllers(0,0)
       there was one(node2Mock).applyControllers(0,0)

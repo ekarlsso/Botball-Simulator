@@ -8,13 +8,18 @@ class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) {
 
   var controllers:List[Controller] = List()
 
-  def apply(c: Controller, timeDiff: Double) = {
-    new Node(c.positionController(timeDiff, this))
+  def apply(c: Controller, timeDiff: Long) = {
+    c.apply(this, timeDiff)
   }
 
-  def applyControllers(timeDiff:Long, timeTick:Long) = {
+  def applyControllers(timeDiff:Long, timeTick:Long): Node = {
+
+    var tempNode = this
+
     controllers.foreach(controller => {
-      this.apply(controller, timeDiff.toDouble)  //TODO: Timediference should be long!
+      tempNode = tempNode.apply(controller, timeDiff)
     })
+
+    tempNode
   }
 }

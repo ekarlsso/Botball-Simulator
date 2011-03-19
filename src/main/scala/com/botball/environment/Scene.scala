@@ -13,9 +13,12 @@ class Scene {
     nodes
   }
 
-  def advanceSimulation(timeDifference:Long, timeTick:Long) {
-    nodes.map(node => {
-      node.applyControllers(timeDifference, timeTick)
+  def advanceSimulation(timeTick:Long) {
+    nodes = nodes.map(node => {
+      node.applyControllers(timeTick - previousTimeTick, timeTick)
+      node
     })
+
+    previousTimeTick = timeTick
   }
 }
