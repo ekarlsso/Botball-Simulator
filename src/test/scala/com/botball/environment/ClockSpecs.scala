@@ -15,15 +15,24 @@ class ClockSpecsAsTests extends JUnit4(ClockSpecs)
 object ClockSpecs extends Specification with Mockito  with TestKit {
   
   "The Clock" should {
+    var clock:ActorRef = null
+  
+    doBefore {
+      clock =  Actor.actorOf[Clock]
+      clock.start
+    }
+    
+    doAfter {
+      clock.stop
+    }
   
     doLast {
       stopTestActor
     }
   
     "return the current time when running" in {
-      val clock = Actor.actorOf[Clock]
-      clock.start
-
+      testActor.isRunning must beTrue 
+      
       val firstResult  = clock !! (GetCurrentTime, 1000)
       (firstResult match {
         case Some(ClockNotStarted) => "clock-is-non-started"
@@ -46,9 +55,6 @@ object ClockSpecs extends Specification with Mockito  with TestKit {
       //For some reason this is needed before this gets working
       //do we have some lazy loading here?
       testActor.isRunning must beTrue 
-    
-      val clock = Actor.actorOf[Clock]
-      clock.start()    
     
       within(1000 millis) {
         clock ! StartClock(10)

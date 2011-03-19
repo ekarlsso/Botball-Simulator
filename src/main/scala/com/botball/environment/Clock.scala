@@ -7,6 +7,7 @@ case class StartClock(initialTime:Long)
 case class TimeTick(time:Long)
 case class GetCurrentTime()
 case class AddSimulant(simulant:ActorRef)
+case class TimeTickReady(time:Long)
 
 /**
  * Created by IntelliJ IDEA.
@@ -46,8 +47,12 @@ class Clock extends Actor {
       } else {
         self.reply(ClockNotStarted)
       }
+
+    case TimeTickReady(value) =>
+      if (value == currentTime) {
+        
+      }
       
     case _ => log.error("Clock got unknown message")
   }
 }
-
