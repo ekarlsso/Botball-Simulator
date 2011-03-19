@@ -9,13 +9,7 @@ case class GetCurrentTime()
 case class AddSimulant(simulant:ActorRef)
 case class TimeTickReady(time:Long)
 
-/**
- * Created by IntelliJ IDEA.
- * User: ekarlsso
- * Date: 3/13/11
- * Time: 7:42 PM
- * To change this template use File | Settings | File Templates.
- */
+
 class Clock extends Actor {
 
   private var running = false
@@ -25,7 +19,11 @@ class Clock extends Actor {
   def addSimulant(simulant:ActorRef) = {
     simulants = simulant :: simulants
   }
-  
+
+  def addRobot(robot:Robot) = {
+    
+  }
+
   def sendTimeTick() {
     simulants.foreach( (a:ActorRef) => {a ! TimeTick(currentTime)})
   }
