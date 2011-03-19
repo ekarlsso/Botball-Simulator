@@ -6,16 +6,16 @@ package com.botball.environment
 class Scene {
 
   private var previousTimeTick:Long = 0
-  private var nodes:List[Node] = List()
+  private var nodes:List[Evaluable] = List()
 
-  def registerNode(node:Node): List[Node] = {
+  def registerNode(node: Evaluable): List[Evaluable] = {
     nodes = node :: nodes
     nodes
   }
 
   def advanceSimulation(timeTick:Long) {
     nodes = nodes.map(node => {
-      node.applyControllers(timeTick - previousTimeTick, timeTick)
+      node.evaluate(timeTick - previousTimeTick, timeTick)
       node
     })
 
