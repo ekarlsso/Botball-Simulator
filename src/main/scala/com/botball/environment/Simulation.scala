@@ -1,62 +1,120 @@
 package com.botball.environment
 
 import scala.collection.immutable.HashMap
-
+import akka.actor.ActorRef
+import akka.actor._
 
 case class StartSimulation()
 case class StopSimulation()
+case class RegisterRobot(robot:ActorRef)
+case class UnRegisterRobot(robot:ActorRef)
+case class SensorDataEvent()
 
-class Simulation(scene:Scene, clock:Clock) extends SimulationActor {
+class SimulationClass(scene:Scene = new Scene) {
 
-  private var robots:List[Robot] = List()
-  private var robotsMap:HashMap[Robot, Node] = new HashMap[Robot, Node]
+  private var robots:List[ActorRef] = List()
+  private var robotsMap:HashMap[Node, ActorRef] = new HashMap[Node, ActorRef]
   private var simulationRunning = false
   private var previousTimeTick:Long = 0
 
-  def registerRobot(robot:Robot):List[Robot]  = {
+  private val clock = Actor.actorOf[Clock]
+
+  def registeredRobots = robots
+
+  def registerRobot(robot:ActorRef):List[ActorRef]  = {
+
+    if (robots.exists(r => r == robot)) return robots
+
     robots = robot :: robots
 
     val node = new Node
-    robotsMap = robotsMap + (robot -> node)
+    robotsMap = robotsMap + (node -> robot)
     scene.registerNode(node)
     robots
   }
 
-  def unRegisterRobot(robot:Robot): List[Robot] = {
+  def unRegisterRobot(robot:ActorRef): List[ActorRef] = {
+
+    if (!robots.exists(r => r == robot)) return robots
+
     robots = robots.filterNot(rob => rob == robot)
 
-    val node = robotsMap(robot)
-    scene.unRegisterNode(node)
+    var removedNode:Node = null
+    robotsMap = robotsMap.filter( mp => {
+      if (mp._2 == robot) {
+        removedNode = mp._1
+        false
+      } else {
+        true
+      }
+    })
 
-    robotsMap = robotsMap - robot
+    scene.unRegisterNode(removedNode)
 
     robots
   }
 
-  def simulationClockTick(timeTick:TimeTick) {
+  def simulationClockTick(timetick:TimeTick) {
 
-    scene.advanceSimulation(timeTick.time - previousTimeTick, timeTick.time)
-    scene.
+    scene.updateScene(timetick)
 
-    previousTimeTick = timeTick.time
+    scene.readSensorData.foreach(data => {
+      val node = data._1
+      val sensorData = data._2
+
+      val robotRef = robotsMap(node)
+      sendSensorData(robotRef, sensorData)
+    })
+
+    previousTimeTick = timetick.time
   }
 
   def startSimulation() {
 
-    if (!simulationRunning) {
+    if (simulationRunning) return
 
-      robots.foreach(robots = > {
-        clock.addRobot(robot)
-      })
-
-
-      clock ! StartClock(0)
-    }
+    simulationRunning = true
+    clock.start
   }
 
+  def stopSimulation() {
 
-  def receive = {
+    if (!simulationRunning) return
 
+    simulationRunning = false
+    clock.stop
+  }
+
+  protected def sendSensorData(actor:ActorRef, sensorData:SensorDataEvent) {
+    actor ! sensorData
   }
 }
 
+
+trait SimulationActor extends Actor {
+
+  this: Simulation =>
+
+  def receive = {
+    case StartSimulation => 
+      this.startSimulation()
+
+    case StopSimulation =>
+      this.stopSimulation()
+      
+    case RegisterRobot(robot) =>
+      this.registerRobot(robot)
+
+    case UnRegisterRobot(robot) =>
+      this.unRegisterRobot(robot)
+
+    case timetick: TimeTick =>
+      this.simulationClockTick(timetick)
+
+    case _ => {
+      log.error("Simulation got unknown message")
+    }
+  }
+}
+
+class Simulation extends SimulationClass with SimulationActor 

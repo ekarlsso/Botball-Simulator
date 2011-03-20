@@ -1,13 +1,15 @@
 package com.botball.environment
 
+import collection.immutable.HashMap
+
 /**
  * Represents the simulation scene that contains the simulated nodes.
  */
 class Scene {
 
-  private var nodes:List[Evaluable] = List()
+  private var nodes:List[Node] = List()
 
-  def registerNode(node: Evaluable): List[Evaluable] = {
+  def registerNode(node: Node): List[Node] = {
     nodes = node :: nodes
     nodes
   }
@@ -17,12 +19,18 @@ class Scene {
     nodes
   }
 
-  def advanceSimulation(timeDiff:Long, timeTick:Long) {
-      nodes = nodes.map(node => {
-      node.applyControllers(timeDiff, timeTick)
-      node
-    })
+  def updateScene(timetick:TimeTick) {
+    nodes = nodes.map(node => node.evaluate(timetick))
   }
 
-  
+  def readSensorData(): List[(Node, SensorDataEvent)] = {
+
+    /*
+    nodes.foreach(nodes => {
+
+    })
+    */
+
+    List()
+  }
 }

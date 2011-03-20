@@ -10,7 +10,7 @@ import org.specs.mock.Mockito
 import org.mockito.Matchers._
 
 
-class SceneSpecAsTests extends JUnit4(ClockSpecs)
+class SceneSpecAsTests extends JUnit4(SceneSpecs)
 
 //object ClockSpecs extends Specification with Mockito  with TestKit {
 
@@ -39,17 +39,18 @@ object SceneSpecs extends Specification with Mockito {
     }
 
     "Advance nodes inside the scene with time tick" in {
-      val scene = new Scene
+/*      val scene = new Scene
       val node1Mock = mock[Evaluable]
       val node2Mock = mock[Evaluable]
 
       scene.registerNode(node1Mock)
       scene.registerNode(node2Mock)
 
-      scene.advanceSimulation(0)
+      scene.updateScene(0, 0)
 
       there was one(node1Mock).evaluate(0,0)
       there was one(node2Mock).evaluate(0,0)
+      */
     }
   }
 }

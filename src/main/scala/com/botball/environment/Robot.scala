@@ -1,3 +1,3 @@
 package com.botball.environment
 
-trait Robot extends SimulationActor
+trait Robot //extends Actor
