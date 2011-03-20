@@ -21,27 +21,27 @@ class SimulationClass(scene:Scene = new Scene) {
 
   def registeredRobots = robots
 
-  def registerRobot(robot:ActorRef):List[ActorRef]  = {
+  def registerRobot(event: RegisterRobot): List[ActorRef]  = {
 
-    if (robots.exists(r => r == robot)) return robots
+    if (robots.exists(r => r == event.robot)) return robots
 
-    robots = robot :: robots
+    robots = event.robot :: robots
 
-    val node = new Node
-    robotsMap = robotsMap + (node -> robot)
+    val node = createRobotNode(event)
+    robotsMap = robotsMap + (node -> event.robot)
     scene.registerNode(node)
     robots
   }
 
-  def unRegisterRobot(robot:ActorRef): List[ActorRef] = {
+  def unRegisterRobot(event: UnRegisterRobot): List[ActorRef] = {
 
-    if (!robots.exists(r => r == robot)) return robots
+    if (!robots.exists(r => r == event.robot)) return robots
 
-    robots = robots.filterNot(rob => rob == robot)
+    robots = robots.filterNot(robot => robot == event.robot)
 
     var removedNode:Node = null
     robotsMap = robotsMap.filter( mp => {
-      if (mp._2 == robot) {
+      if (mp._2 == event.robot) {
         removedNode = mp._1
         false
       } else {
@@ -75,6 +75,7 @@ class SimulationClass(scene:Scene = new Scene) {
 
     simulationRunning = true
     clock.start
+    
   }
 
   def stopSimulation() {
@@ -84,6 +85,8 @@ class SimulationClass(scene:Scene = new Scene) {
     simulationRunning = false
     clock.stop
   }
+
+  protected def createRobotNode(robot:RegisterRobot) : Node = new Node
 
   protected def sendSensorData(actor:ActorRef, sensorData:SensorDataEvent) {
     actor ! sensorData
@@ -102,11 +105,11 @@ trait SimulationActor extends Actor {
     case StopSimulation =>
       this.stopSimulation()
       
-    case RegisterRobot(robot) =>
-      this.registerRobot(robot)
+    case event: RegisterRobot =>
+      this.registerRobot(event)
 
-    case UnRegisterRobot(robot) =>
-      this.unRegisterRobot(robot)
+    case event: UnRegisterRobot =>
+      this.unRegisterRobot(event)
 
     case timetick: TimeTick =>
       this.simulationClockTick(timetick)
