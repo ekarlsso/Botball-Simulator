@@ -72,7 +72,7 @@ object SimulationSpecs extends Specification with Mockito {
       simulation.registerRobot(RegisterRobot(robot2))
       there was one(sceneMock).registerNode(node2)
 
-      val timeTick = new TimeTick(0)
+      val timeTick = new TimeTick(0, 0)
       simulation.simulationClockTick(timeTick)
       there was one(sceneMock).updateScene(timeTick)
       there was one(sceneMock).readSensorData()
