@@ -4,7 +4,7 @@ import akka.actor._
 
 case class ClockNotStarted()
 case class StartClock(initialTime:Long)
-case class TimeTick(time:Long)
+case class TimeTick(time: Long, timeDiff: Long)
 case class GetCurrentTime()
 case class AddSimulant(simulant:ActorRef)
 case class TimeTickReady(time:Long)
@@ -13,7 +13,8 @@ case class TimeTickReady(time:Long)
 class Clock extends Actor {
 
   private var running = false
-  private var currentTime:Long = 0;
+  private var currentTime: Long = 0;
+  private var previousTime: Long = 0;
   private var simulants:List[ActorRef] = List()
 
   def addSimulant(simulant:ActorRef) = {
@@ -25,7 +26,7 @@ class Clock extends Actor {
   }
 
   def sendTimeTick() {
-    simulants.foreach( (a:ActorRef) => {a ! TimeTick(currentTime)})
+    simulants.foreach( (a:ActorRef) => {a ! TimeTick(currentTime, currentTime - previousTime)})
   }
 
   def receive = {
@@ -33,6 +34,7 @@ class Clock extends Actor {
       if (!running) {
         running = true
         currentTime = initialTime
+        previousTime = initialTime
         sendTimeTick()
       }
 
@@ -41,7 +43,8 @@ class Clock extends Actor {
 
     case GetCurrentTime =>
       if (running) {
-        self.reply(TimeTick(currentTime))
+        self.reply(TimeTick(currentTime, currentTime - previousTime))
+        previousTime = currentTime
       } else {
         self.reply(ClockNotStarted)
       }

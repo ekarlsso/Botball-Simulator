@@ -36,7 +36,7 @@ object ClockSpecs extends Specification with Mockito  with TestKit {
       val firstResult  = clock !! (GetCurrentTime, 1000)
       (firstResult match {
         case Some(ClockNotStarted) => "clock-is-non-started"
-        case Some(TimeTick(time)) => "Clock shouldn't be started"
+        case Some(TimeTick(time, timeDiff)) => "Clock shouldn't be started"
         case _ => "Clock returning undefined event"
       }) must_== "clock-is-non-started"
 
@@ -45,7 +45,7 @@ object ClockSpecs extends Specification with Mockito  with TestKit {
       val result = clock !! (GetCurrentTime, 1000)
 
       result match {
-        case Some(TimeTick(time)) => time must_== 10
+        case Some(TimeTick(time, timeDiff)) => time must_== 10
         case _ => fail("Not returning TimeTick(time)")
       }
     }
@@ -59,7 +59,7 @@ object ClockSpecs extends Specification with Mockito  with TestKit {
       within(1000 millis) {
         clock ! StartClock(10)
         clock ! GetCurrentTime
-        expectMsg(TimeTick(10))
+        expectMsg(TimeTick(10, 0))
       }
     }
   }
