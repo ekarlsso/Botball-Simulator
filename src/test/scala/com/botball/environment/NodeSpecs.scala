@@ -2,11 +2,11 @@ package com.botball.environment
 
 import org.specs.runner.JUnit4
 import org.specs.Specification
-import scalala.tensor.dense.{DenseVectorCol, DenseVector}
+import scalala.tensor.dense.DenseVector
 
 class NodeSpecsAsTests extends JUnit4(ClockSpecs)
 
-object ConstantVelocityNode extends Specification {
+object ConstantVelocityNodeSpecs extends Specification {
   class ConstantVelocityNode extends Node with Animated with ConstantVelocityMovement
   "ConstantVelocityNode" should {
     "move with constant velocity" in {
@@ -24,3 +24,5 @@ object ConstantVelocityNode extends Specification {
   }
   def timeDiff(timeDiff: Long) = TimeTick(timeDiff, timeDiff)
 }
+
+
