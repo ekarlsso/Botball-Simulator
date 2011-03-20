@@ -8,7 +8,6 @@ case class StartSimulation()
 case class StopSimulation()
 case class RegisterRobot(robot:ActorRef)
 case class UnRegisterRobot(robot:ActorRef)
-case class SensorDataEvent()
 
 class SimulationClass(scene:Scene = new Scene) {
 
@@ -88,7 +87,7 @@ class SimulationClass(scene:Scene = new Scene) {
 
   protected def createRobotNode(robot:RegisterRobot) : Node = new Node
 
-  protected def sendSensorData(actor:ActorRef, sensorData:SensorDataEvent) {
+  protected def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
     actor ! sensorData
   }
 }

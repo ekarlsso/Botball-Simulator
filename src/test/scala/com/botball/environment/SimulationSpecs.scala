@@ -47,12 +47,10 @@ object SimulationSpecs extends Specification with Mockito {
       val node1 = mock[Node]
       val node2 = mock[Node]
 
-      sceneMock.readSensorData returns List((node1, new SensorDataEvent),
-        (node2, new SensorDataEvent))
-
+      sceneMock.readSensorData returns List((node1, Nil), (node2, Nil))
 
       val simulation = new SimulationClass(sceneMock) {
-        override def sendSensorData(actor:ActorRef, sensorData:SensorDataEvent) {
+        override def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
              
         }
 
