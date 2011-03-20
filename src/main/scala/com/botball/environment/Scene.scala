@@ -24,13 +24,6 @@ class Scene {
   }
 
   def readSensorData(): List[(Node, SensorDataEvent)] = {
-
-    /*
-    nodes.foreach(nodes => {
-
-    })
-    */
-
-    List()
+    nodes.map( node => (node, node.sense) )
   }
 }

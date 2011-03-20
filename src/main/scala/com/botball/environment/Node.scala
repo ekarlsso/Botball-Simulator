@@ -19,4 +19,5 @@ trait Animated { this: Node =>
 class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) {
   def position = pos
   def evaluate(timetick: TimeTick) = this
+  def sense = SensorDataEvent()
 }
