@@ -9,16 +9,14 @@ case class StopSimulation()
 case class RegisterRobot(robot:ActorRef)
 case class UnRegisterRobot(robot:ActorRef)
 
-class SimulationClass(scene:Scene = new Scene) {
+
+/**
+ * Manages robot registering and the scene state change related to it.
+ */
+trait RobotRegistryManagement {
 
   private var robots:List[ActorRef] = List()
   private var robotsMap:HashMap[Node, ActorRef] = new HashMap[Node, ActorRef]
-  private var simulationRunning = false
-  private var previousTimeTick:Long = 0
-
-  private val clock = Actor.actorOf[Clock]
-
-  def registeredRobots = robots
 
   def registerRobot(event: RegisterRobot): List[ActorRef]  = {
 
@@ -53,6 +51,25 @@ class SimulationClass(scene:Scene = new Scene) {
     robots
   }
 
+  def robotRegistryManagement: Actor.Receive = {
+    case event: RegisterRobot => this.registerRobot(event)
+    case event: UnRegisterRobot => this.unRegisterRobot(event)
+  }
+
+  def registeredRobots = robots
+
+  def robotForNode(node: Node): ActorRef = robotsMap(node)
+
+  def scene:Scene
+
+  protected def createRobotNode(robot:RegisterRobot) : Node = new Node
+}
+
+trait TimeTickManagement  {
+
+  private var simulationRunning = false
+  private var previousTimeTick:TimeTick = new TimeTick(0,0)
+
   def simulationClockTick(timetick:TimeTick) {
 
     scene.updateScene(timetick)
@@ -61,62 +78,88 @@ class SimulationClass(scene:Scene = new Scene) {
       val node = data._1
       val sensorData = data._2
 
-      val robotRef = robotsMap(node)
+      val robotRef = robotForNode(node)
       sendSensorData(robotRef, sensorData)
     })
 
-    previousTimeTick = timetick.time
+    previousTimeTick = timetick
   }
 
-  def startSimulation() {
+  def timeTickManagement: Actor.Receive = {
+    case event: TimeTick => simulationClockTick(event)
+  }
 
+  protected def sendSensorData(actor: ActorRef, sensorData: List[SensorData]){
+    actor ! sensorData
+  }
+  
+  def robotForNode(node: Node): ActorRef
+  
+  def scene: Scene
+}
+
+/**
+ * Manages common simulation events. This include Start and Stop events
+ */
+trait SimulationManagement {
+
+  var simulationRunning = false
+
+  def startSimulation() {
     if (simulationRunning) return
 
     simulationRunning = true
     clock.start
-    
+
+    clock ! AddSimulant(simulation)
+    clock ! StartClock(0)
   }
 
   def stopSimulation() {
-
     if (!simulationRunning) return
 
     simulationRunning = false
     clock.stop
   }
 
-  protected def createRobotNode(robot:RegisterRobot) : Node = new Node
+  def simulationManagement: Actor.Receive = {
+    case StartSimulation => startSimulation()
+    case StopSimulation => stopSimulation()
+  }
 
-  protected def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
-    actor ! sensorData
+  def clock: ActorRef
+
+  def simulation: ActorRef
+}
+
+/**
+ * Trait to handle unknown events
+ */
+trait UnknownEventManagement {
+  def unknownEventManagement: Actor.Receive = {
+    case _ => println("Unkown event received by Simulation")
   }
 }
 
+/**
+ * Actor coodrinating the simulation
+ */
+class Simulation extends Actor
+  with TimeTickManagement
+  with RobotRegistryManagement
+  with SimulationManagement
+  with UnknownEventManagement {
 
-trait SimulationActor extends Actor {
+  private var simulatedScene:Scene = new Scene
+  private var simulationClock:ActorRef = Actor.actorOf[Clock]
 
-  this: Simulation =>
+  def scene:Scene = simulatedScene
+  def clock:ActorRef = simulationClock
+  def simulation:ActorRef = this.self
 
-  def receive = {
-    case StartSimulation => 
-      this.startSimulation()
-
-    case StopSimulation =>
-      this.stopSimulation()
-      
-    case event: RegisterRobot =>
-      this.registerRobot(event)
-
-    case event: UnRegisterRobot =>
-      this.unRegisterRobot(event)
-
-    case timetick: TimeTick =>
-      this.simulationClockTick(timetick)
-
-    case _ => {
-      log.error("Simulation got unknown message")
-    }
-  }
+  def receive =
+    robotRegistryManagement orElse
+    timeTickManagement orElse
+    simulationManagement orElse
+    unknownEventManagement
 }
-
-class Simulation extends SimulationClass with SimulationActor 

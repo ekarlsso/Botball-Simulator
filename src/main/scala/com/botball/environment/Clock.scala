@@ -4,6 +4,7 @@ import akka.actor._
 
 case class ClockNotStarted()
 case class StartClock(initialTime:Long)
+case class StopClock()
 case class TimeTick(time: Long, timeDiff: Long)
 case class GetCurrentTime()
 case class AddSimulant(simulant:ActorRef)
@@ -37,6 +38,8 @@ class Clock extends Actor {
         previousTime = initialTime
         sendTimeTick()
       }
+
+    case StopClock => running = false
 
     case AddSimulant(simulant) => 
       addSimulant(simulant)

@@ -13,30 +13,52 @@ class SimulationSpecsAsTests extends JUnit4(SimulationSpecs)
 
 object SimulationSpecs extends Specification with Mockito {
 
+  class RobotRegistry(sceneObj: Scene = new Scene) extends RobotRegistryManagement {
+    def scene:Scene = sceneObj
+  }
+
   "Simulation " should {
 
     "be able to register and unregister robots" in {
 
-      val simulation = new SimulationClass
-
+      val sceneMock = mock[Scene]
+      val node1 = mock[Node]
+      val node2 = mock[Node]
       val robot1 = mock[ActorRef]
       val robot2 = mock[ActorRef]
+      
+      val roboRegistry = new RobotRegistry(sceneMock) {
+        override def createRobotNode(robot: RegisterRobot): Node =
+          if (robot.robot == robot1) {
+            node1
+          } else if (robot.robot == robot2) {
+            node2
+          } else {
+            throw new Exception("Unpsecified robot encountered")
+          }
+      }
 
-      simulation.registerRobot(RegisterRobot(robot1))
-      simulation.registerRobot(RegisterRobot(robot2))
+      roboRegistry.registerRobot(RegisterRobot(robot1))
+      there was one(sceneMock).registerNode(node1)
 
-      simulation.registeredRobots.contains(robot1) must beTrue
-      simulation.registeredRobots.contains(robot2) must beTrue
+      roboRegistry.registerRobot(RegisterRobot(robot2))
+      there was one(sceneMock).registerNode(node2)
 
-      simulation.unRegisterRobot(UnRegisterRobot(robot1))
-      simulation.registeredRobots.contains(robot1) must beFalse
-      simulation.registeredRobots.contains(robot2) must beTrue
+      roboRegistry.registeredRobots.length must_== 2
+      roboRegistry.registeredRobots.contains(robot1) must beTrue
+      roboRegistry.registeredRobots.contains(robot2) must beTrue
 
-      simulation.unRegisterRobot(UnRegisterRobot(robot2))
-      simulation.registeredRobots.contains(robot1) must beFalse
-      simulation.registeredRobots.contains(robot2) must beFalse
+      roboRegistry.unRegisterRobot(UnRegisterRobot(robot1))
+      roboRegistry.registeredRobots.contains(robot1) must beFalse
+      roboRegistry.registeredRobots.contains(robot2) must beTrue
+      there was one(sceneMock).unRegisterNode(node1)
+
+      roboRegistry.unRegisterRobot(UnRegisterRobot(robot2))
+      roboRegistry.registeredRobots.contains(robot1) must beFalse
+      roboRegistry.registeredRobots.contains(robot2) must beFalse
+      there was one(sceneMock).unRegisterNode(node1)
     }
-
+/*
     case class RobotMatcher(robot: ActorRef)
 
     "update scene data and collect sensordata when clock ticks" in {
@@ -75,6 +97,6 @@ object SimulationSpecs extends Specification with Mockito {
       there was one(sceneMock).updateScene(timeTick)
       there was one(sceneMock).readSensorData()
     }
+    */
   }
-
 }
