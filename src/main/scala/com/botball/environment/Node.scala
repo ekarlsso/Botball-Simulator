@@ -16,8 +16,7 @@ trait Animated { this: Node =>
   protected def calculatePosition(timeDiff: Long): DenseVector[Double]
 }
 
-class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) {
+class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) extends DefaultSensing {
   def position = pos
   def evaluate(timetick: TimeTick) = this
-  def sense = SensorDataEvent()
 }

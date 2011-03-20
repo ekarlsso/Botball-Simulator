@@ -4,8 +4,6 @@ import org.specs.runner.JUnit4
 import org.specs.Specification
 import scalala.tensor.dense.DenseVector
 
-class NodeSpecsAsTests extends JUnit4(ClockSpecs)
-
 object ConstantVelocityNodeSpecs extends Specification {
   class ConstantVelocityNode extends Node with Animated with ConstantVelocityMovement
   "ConstantVelocityNode" should {
@@ -24,5 +22,3 @@ object ConstantVelocityNodeSpecs extends Specification {
   }
   def timeDiff(timeDiff: Long) = TimeTick(timeDiff, timeDiff)
 }
-
-
