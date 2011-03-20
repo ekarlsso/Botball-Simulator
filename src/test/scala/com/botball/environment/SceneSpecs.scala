@@ -40,8 +40,8 @@ object SceneSpecs extends Specification with Mockito {
 
     "Advance nodes inside the scene with time tick" in {
 /*      val scene = new Scene
-      val node1Mock = mock[Evaluable]
-      val node2Mock = mock[Evaluable]
+      val node1Mock = mock[Animated]
+      val node2Mock = mock[Animated]
 
       scene.registerNode(node1Mock)
       scene.registerNode(node2Mock)

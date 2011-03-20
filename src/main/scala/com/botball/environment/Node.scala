@@ -11,13 +11,12 @@ trait ConstantVelocityMovement { this: Node =>
   protected def velocity: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)
 }
 
-trait Evaluable extends Node {
-  def evaluate(timeDiff: Long, timeTick: Long = 1) = new Node(calculatePosition(timeDiff))
+trait Animated { this: Node =>
+  override def evaluate(timetick: TimeTick) = new Node(calculatePosition(timetick.timeDiff))
   protected def calculatePosition(timeDiff: Long): DenseVector[Double]
 }
 
 class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) {
   def position = pos
-
-  def evaluate(timetick:TimeTick) = this
+  def evaluate(timetick: TimeTick) = this
 }
