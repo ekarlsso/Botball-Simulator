@@ -11,7 +11,7 @@ import org.mockito.Matchers._
 
 class SimulationSpecsAsTests extends JUnit4(SimulationSpecs)
 
-object SimulationSpecs extends Specification with Mockito {
+object SimulationSpecs extends Specification with Mockito with TestKit {
 
   class TestBase(sceneObj: Scene = new Scene) {
      def scene:Scene = sceneObj
@@ -23,16 +23,20 @@ object SimulationSpecs extends Specification with Mockito {
   class TimeClass(sceneObj: Scene = new Scene) extends TestBase(sceneObj)
     with TimeTickManagement {
 
-    def robotForNode(node: Node): ActorRef  = {
-      return null
-    }
+    def robotForNode(node: Node): ActorRef  = null
 
-    override def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
+    def clock: ActorRef = null
 
-    }
+    def registeredRobots: List[ActorRef] = List()
+
+    override def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) { }
+
+    override def informRegisteredRobots(timeTick: TimeTick) { }
+
+    override def replyToClockTick(timeTick: TimeTick) { }
   }
 
-  "Simulation " should {
+  "Simulation logic" should {
 
     "be able to register and unregister robots" in {
 
@@ -42,35 +46,30 @@ object SimulationSpecs extends Specification with Mockito {
       val robot1 = mock[ActorRef]
       val robot2 = mock[ActorRef]
       
-      val roboRegistry = new RobotRegistry(sceneMock) {
-        override def createRobotNode(robot: RegisterRobot): Node =
-          if (robot.robot == robot1) {
-            node1
-          } else if (robot.robot == robot2) {
-            node2
-          } else {
-            throw new Exception("Unpsecified robot encountered")
-          }
-      }
+      val roboRegistry = new RobotRegistry(sceneMock)
+      val roboRegistrySpy = spy(roboRegistry)
 
-      roboRegistry.registerRobot(RegisterRobot(robot1))
+      roboRegistrySpy.createRobotNode(RegisterRobot(robot1)) returns node1
+      roboRegistrySpy.createRobotNode(RegisterRobot(robot2)) returns node2
+
+      roboRegistrySpy.registerRobot(RegisterRobot(robot1))
       there was one(sceneMock).registerNode(node1)
 
-      roboRegistry.registerRobot(RegisterRobot(robot2))
+      roboRegistrySpy.registerRobot(RegisterRobot(robot2))
       there was one(sceneMock).registerNode(node2)
 
-      roboRegistry.registeredRobots.length must_== 2
-      roboRegistry.registeredRobots.contains(robot1) must beTrue
-      roboRegistry.registeredRobots.contains(robot2) must beTrue
+      roboRegistrySpy.registeredRobots.length must_== 2
+      roboRegistrySpy.registeredRobots.contains(robot1) must beTrue
+      roboRegistrySpy.registeredRobots.contains(robot2) must beTrue
 
-      roboRegistry.unRegisterRobot(UnRegisterRobot(robot1))
-      roboRegistry.registeredRobots.contains(robot1) must beFalse
-      roboRegistry.registeredRobots.contains(robot2) must beTrue
+      roboRegistrySpy.unRegisterRobot(UnRegisterRobot(robot1))
+      roboRegistrySpy.registeredRobots.contains(robot1) must beFalse
+      roboRegistrySpy.registeredRobots.contains(robot2) must beTrue
       there was one(sceneMock).unRegisterNode(node1)
 
-      roboRegistry.unRegisterRobot(UnRegisterRobot(robot2))
-      roboRegistry.registeredRobots.contains(robot1) must beFalse
-      roboRegistry.registeredRobots.contains(robot2) must beFalse
+      roboRegistrySpy.unRegisterRobot(UnRegisterRobot(robot2))
+      roboRegistrySpy.registeredRobots.contains(robot1) must beFalse
+      roboRegistrySpy.registeredRobots.contains(robot2) must beFalse
       there was one(sceneMock).unRegisterNode(node1)
     }
 
@@ -89,8 +88,9 @@ object SimulationSpecs extends Specification with Mockito {
       val sensorData1 = mock[SensorData]
       val sensorData2 = mock[SensorData]
 
-      var timeTickObj = new TimeClass(sceneMock);
+      val timeTick = new TimeTick(10L, 0L)
 
+      var timeTickObj = new TimeClass(sceneMock);
       val timeTickObjSpy = spy(timeTickObj)
 
       timeTickObjSpy.robotForNode(node1) returns robot1
@@ -99,8 +99,6 @@ object SimulationSpecs extends Specification with Mockito {
       sceneMock.readSensorData returns List((node1, List(sensorData1)),
         (node2, List(sensorData2)))
 
-      val timeTick = new TimeTick(10L, 0L)
-
       timeTickObjSpy.simulationClockTick(timeTick)
 
       there was one(sceneMock).updateScene(timeTick)
@@ -108,6 +106,44 @@ object SimulationSpecs extends Specification with Mockito {
 
       there was one(timeTickObjSpy).sendSensorData(robot1, List(sensorData1))
       there was one(timeTickObjSpy).sendSensorData(robot2, List(sensorData2))
+      there was one(timeTickObjSpy).replyToClockTick(timeTick)
+      there was one(timeTickObjSpy).informRegisteredRobots(timeTick)
+    }
+  }
+
+  "Simulation actor " should {
+
+    var simulation:ActorRef = null
+
+    doAfter {
+      simulation.stop
+    }
+
+    doLast {
+      stopTestActor
+    }
+
+    "Advance state with new clock tick" in {
+
+      testActor.isRunning must beTrue
+
+      simulation = Actor.actorOf(new Simulation {
+        override def clock: ActorRef = testActor
+      })
+      simulation.start
+
+      within(1000 millis) {
+
+        simulation ! RegisterRobot(testActor)
+        simulation ! TimeTick(0, 0)
+        expectMsg(List())            //Empty sensor data
+        expectMsg(TimeTick(0, 0))    //Current Time Tick for robot
+        expectMsg(TimeTickReady(0))  //Reply To Clock
+
+        simulation ! UnRegisterRobot(testActor)
+        simulation ! TimeTick(10, 10)
+        expectMsg(TimeTickReady(10))  //Reply To Clock
+      }
     }
   }
 }

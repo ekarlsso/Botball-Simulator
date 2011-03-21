@@ -15,8 +15,8 @@ case class UnRegisterRobot(robot:ActorRef)
  */
 trait RobotRegistryManagement {
 
-  private var robots:List[ActorRef] = List()
-  private var robotsMap:HashMap[Node, ActorRef] = new HashMap[Node, ActorRef]
+  private var robots: List[ActorRef] = List()
+  private var robotsMap: HashMap[Node, ActorRef] = new HashMap[Node, ActorRef]
 
   def registerRobot(event: RegisterRobot): List[ActorRef]  = {
 
@@ -62,17 +62,20 @@ trait RobotRegistryManagement {
 
   def scene:Scene
 
-  protected def createRobotNode(robot:RegisterRobot) : Node = new Node
+  def createRobotNode(robot:RegisterRobot) : Node = new Node
 }
 
+/**
+ * Manages simulation clock tick
+ */
 trait TimeTickManagement  {
 
   private var simulationRunning = false
   private var previousTimeTick:TimeTick = new TimeTick(0,0)
 
-  def simulationClockTick(timetick:TimeTick) {
+  def simulationClockTick(timeTick: TimeTick) {
 
-    scene.updateScene(timetick)
+    scene.updateScene(timeTick)
 
     scene.readSensorData.foreach(data => {
       val node = data._1
@@ -82,20 +85,36 @@ trait TimeTickManagement  {
       sendSensorData(robotRef, sensorData)
     })
 
-    previousTimeTick = timetick
+    previousTimeTick = timeTick
+
+    informRegisteredRobots(timeTick)
+
+    replyToClockTick(timeTick)
   }
 
   def timeTickManagement: Actor.Receive = {
     case event: TimeTick => simulationClockTick(event)
   }
 
-  def robotForNode(node: Node): ActorRef
-  
-  def scene: Scene
-
-  protected def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
+  def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
     actor ! sensorData
   }
+
+  def informRegisteredRobots(timeTick: TimeTick) {
+    registeredRobots.foreach(robot => robot ! timeTick)
+  }
+
+  def replyToClockTick(timeTick: TimeTick) {
+    clock ! TimeTickReady(timeTick.time)
+  }
+
+  def registeredRobots: List[ActorRef]
+
+  def robotForNode(node: Node): ActorRef
+
+  def clock: ActorRef
+
+  def scene: Scene
 }
 
 /**
@@ -142,7 +161,8 @@ trait UnknownEventManagement {
 }
 
 /**
- * Actor coodrinating the simulation
+ * Manages the simulation. Stores the simulation state and keeps track of the
+ * registered robots to the simulation
  */
 class Simulation extends Actor
   with TimeTickManagement
