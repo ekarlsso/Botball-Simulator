@@ -89,13 +89,13 @@ trait TimeTickManagement  {
     case event: TimeTick => simulationClockTick(event)
   }
 
-  protected def sendSensorData(actor: ActorRef, sensorData: List[SensorData]){
-    actor ! sensorData
-  }
-  
   def robotForNode(node: Node): ActorRef
   
   def scene: Scene
+
+  protected def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
+    actor ! sensorData
+  }
 }
 
 /**
