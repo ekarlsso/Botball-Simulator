@@ -6,23 +6,25 @@ import collection.immutable.HashMap
  * Represents the simulation scene that contains the simulated nodes.
  */
 class Scene {
-  var nodes:List[Node] = List()
+  var sceneNodes:List[Node] = List()
 
   def registerNode(node: Node): List[Node] = {
-    nodes = node :: nodes
-    nodes
+    sceneNodes = node :: sceneNodes
+    sceneNodes
   }
 
   def unRegisterNode(node:Node): List[Node] = {
-    nodes = nodes.filterNot(n => n == node)
-    nodes
+    sceneNodes = sceneNodes.filterNot(n => n == node)
+    sceneNodes
   }
 
   def updateScene(timetick:TimeTick) {
-    nodes = nodes.map(node => node.evaluate(timetick))
+    sceneNodes = sceneNodes.map(node => node.evaluate(timetick))
   }
 
   def readSensorData(): List[(Node, List[SensorData])] = {
-    nodes.map( node => (node, node.sense) )
+    nodes.map(node => (node, node.sense) )
   }
+
+  def nodes = sceneNodes
 }

@@ -8,6 +8,9 @@ case class StartSimulation()
 case class StopSimulation()
 case class RegisterRobot(robot:ActorRef)
 case class UnRegisterRobot(robot:ActorRef)
+case class GetNumberOfRobots()
+case class NumberOfRobots(number: Int)
+case class GetSceneRobots()
 
 
 /**
@@ -27,6 +30,8 @@ trait RobotRegistryManagement {
     val node = createRobotNode(event)
     robotsMap = robotsMap + (node -> event.robot)
     scene.registerNode(node)
+
+    println("Robot registered!")
     robots
   }
 
@@ -54,15 +59,19 @@ trait RobotRegistryManagement {
   def robotRegistryManagement: Actor.Receive = {
     case event: RegisterRobot => this.registerRobot(event)
     case event: UnRegisterRobot => this.unRegisterRobot(event)
+    case event: GetNumberOfRobots => this.simulation.reply(NumberOfRobots(robots.length))
+    case event: GetSceneRobots => this.simulation.reply(scene.nodes)
   }
 
   def registeredRobots = robots
 
   def robotForNode(node: Node): ActorRef = robotsMap(node)
 
+  def createRobotNode(robot:RegisterRobot) : Node = new Node
+
   def scene:Scene
 
-  def createRobotNode(robot:RegisterRobot) : Node = new Node
+  def simulation:ActorRef
 }
 
 /**
@@ -152,7 +161,7 @@ trait SimulationManagement {
 }
 
 /**
- * Trait to handle unknown events
+ * Manages unknown events.
  */
 trait UnknownEventManagement {
   def unknownEventManagement: Actor.Receive = {

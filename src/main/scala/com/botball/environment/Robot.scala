@@ -1,3 +1,9 @@
 package com.botball.environment
 
-trait Robot //extends Actor
+import akka.actor._
+
+class Robot extends Actor {
+  def receive = {
+    case _ => log.error("Robot got unknown message")
+  }
+}

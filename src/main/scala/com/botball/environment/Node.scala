@@ -19,4 +19,6 @@ trait Animated { this: Node =>
 class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) extends DefaultSensing {
   def position = pos
   def evaluate(timetick: TimeTick) = this
+
+  def toJSON = "{\"type\": \"Node\", \"pos\":["+pos(0)+ ", "+pos(1)+", "+pos(2) +"]}"
 }

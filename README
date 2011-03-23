@@ -1,0 +1,15 @@
+Botball simulator
+
+Simple simulation environment where small bots can wander around and react
+to sensor data.
+
+Setup
+1. cd botball_simulator_dir (what ever you decided it to be)
+2. sbt
+    -> update
+    -> package
+    -> quit
+3. cp target/scala_2.8.1/botball-simulator_2.8.1-1.0.jar $JETTY_HOME/webapp/botball.war
+4. cd $JETTY_HOME
+6. java -jar start.jar
+
