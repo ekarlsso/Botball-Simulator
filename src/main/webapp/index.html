@@ -1,13 +1,59 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <title></title>
+    <title>BotBall Simulator</title>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript">
+
+        function drawCanvas() {
+            var canvas = document.getElementById("botBallCanvas");
+            if (canvas.getContext) {
+                var context = canvas.getContext("2d");
+
+                context.fillStyle = "rgb(20,0,0)";
+                context.fillRect(10, 10, 40, 40);
+            } else {
+                console.log("didn't have canvas");
+            }
+        }
+
+         $(document).ready(function() {
+           // do stuff when DOM is ready
+            $("#setupSimulationLink").click(function() {
+                $.ajax({
+                    url:"simulation/setup",
+                    success:function(data) {
+                        $("#simulationStatus").html(data)
+                    }});
+            });
+
+            $("#loadRobotsLink").click(function() {
+                $.ajax({
+                    url:"simulation/scene/robots",
+                    success:function(data) {
+                        $("#messages").html(data)
+                    }});
+            });
+
+            drawCanvas();
+         });
+    </script>
+    <style type="text/css">
+         canvas { border: 1px solid black; }
+    </style>
 </head>
 <body>
 
-    <a href="simulation/setup">Setup the test</a><br/>
-    <a href="simulation/scene/robots">Retrieve robots</a>
+    <h1>Botball Simulation</h1>
+    <p id="simulationStatus">Simulation not configured</p>
+    <p id="messages"></p>
+
+    <p>
+        <a id="setupSimulationLink" href="#">Setup the test</a> |
+        <a id="loadRobotsLink" href="#">Retrieve robots</a>
+    </p>
+    <div id="canvasBox">
+        <canvas id="botBallCanvas" width="400" height="300"></canvas>
+    </div>
 
 </body>
 </html>

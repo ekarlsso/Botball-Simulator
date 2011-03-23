@@ -20,5 +20,5 @@ class Node(pos: DenseVector[Double] = DenseVector(0.0, 0.0, 0.0)) extends Defaul
   def position = pos
   def evaluate(timetick: TimeTick) = this
 
-  def toJSON = "{\"type\": \"Node\", \"pos\":["+pos(0)+ ", "+pos(1)+", "+pos(2) +"]}"
+  def toJSON = "{\"type\": \"Node\", \"pos\":["+pos(0)+ ", "+pos(1)+", "+pos(2)+"]}"
 }

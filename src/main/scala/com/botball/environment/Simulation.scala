@@ -8,8 +8,6 @@ case class StartSimulation()
 case class StopSimulation()
 case class RegisterRobot(robot:ActorRef)
 case class UnRegisterRobot(robot:ActorRef)
-case class GetNumberOfRobots()
-case class NumberOfRobots(number: Int)
 case class GetSceneRobots()
 
 
@@ -56,11 +54,14 @@ trait RobotRegistryManagement {
     robots
   }
 
+  def sendRobotsReply() {
+    simulation.reply(scene.nodes)
+  }
+
   def robotRegistryManagement: Actor.Receive = {
     case event: RegisterRobot => this.registerRobot(event)
     case event: UnRegisterRobot => this.unRegisterRobot(event)
-    case event: GetNumberOfRobots => this.simulation.reply(NumberOfRobots(robots.length))
-    case event: GetSceneRobots => this.simulation.reply(scene.nodes)
+    case event: GetSceneRobots => this.sendRobotsReply()
   }
 
   def registeredRobots = robots

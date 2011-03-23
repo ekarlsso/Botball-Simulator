@@ -18,7 +18,14 @@ object SimulationSpecs extends Specification with Mockito with TestKit {
   }
 
   class RobotRegistry(sceneObj: Scene = new Scene) extends TestBase(sceneObj)
-    with RobotRegistryManagement
+    with RobotRegistryManagement {
+
+    override def sendRobotsReply() {
+
+    }
+
+    def simulation: ActorRef = null
+  }
   
   class TimeClass(sceneObj: Scene = new Scene) extends TestBase(sceneObj)
     with TimeTickManagement {
