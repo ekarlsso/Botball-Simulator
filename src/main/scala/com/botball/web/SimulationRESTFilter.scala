@@ -19,7 +19,7 @@ class SimulationRESTFilter extends ScalatraFilter {
     if (!simulationSetuped) {
 
       simulation ! RegisterRobot(robot1)
-      simulation ! RegisterRobot(robot2)
+      simulation ! RegisterRobot(robot2, (50,50))
 
       simulationSetuped = true
 
@@ -29,6 +29,24 @@ class SimulationRESTFilter extends ScalatraFilter {
       "Simulation already setuped!"
     }
   }
+
+  get("/simulation/start") {
+    simulation ! StartSimulation()
+    "Simulation started"
+  }
+
+  get("/simulation/stop") {
+    simulation ! StopSimulation()
+    "Simulation stopped"
+  }
+
+
+  /*
+  post("/simulation/robot") {
+
+    
+
+  }*/
 
   get("/simulation/scene/robots") {
     (simulation !! (GetSceneRobots(), 1000))  match {

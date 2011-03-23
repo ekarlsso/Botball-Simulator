@@ -3,10 +3,11 @@ package com.botball.environment
 import scala.collection.immutable.HashMap
 import akka.actor.ActorRef
 import akka.actor._
+import scalala.tensor.dense.DenseVector
 
 case class StartSimulation()
 case class StopSimulation()
-case class RegisterRobot(robot:ActorRef)
+case class RegisterRobot(robot:ActorRef, position: (Int, Int) = (0,0))
 case class UnRegisterRobot(robot:ActorRef)
 case class GetSceneRobots()
 
@@ -29,7 +30,6 @@ trait RobotRegistryManagement {
     robotsMap = robotsMap + (node -> event.robot)
     scene.registerNode(node)
 
-    println("Robot registered!")
     robots
   }
 
@@ -68,7 +68,9 @@ trait RobotRegistryManagement {
 
   def robotForNode(node: Node): ActorRef = robotsMap(node)
 
-  def createRobotNode(robot:RegisterRobot) : Node = new Node
+  def createRobotNode(robot:RegisterRobot) : Node = {
+    new RobotNode(DenseVector(robot.position._1, robot.position._2))
+  }
 
   def scene:Scene
 

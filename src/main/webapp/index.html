@@ -1,23 +1,15 @@
 <html>
 <head>
     <title>BotBall Simulator</title>
+    <link href="style/default.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/botball.js"></script>
     <script type="text/javascript">
 
-        function drawCanvas() {
-            var canvas = document.getElementById("botBallCanvas");
-            if (canvas.getContext) {
-                var context = canvas.getContext("2d");
+        var draw = null;
+        var simulation = null;
 
-                context.fillStyle = "rgb(20,0,0)";
-                context.fillRect(10, 10, 40, 40);
-            } else {
-                console.log("didn't have canvas");
-            }
-        }
-
-         $(document).ready(function() {
-           // do stuff when DOM is ready
+        $(document).ready(function() {
             $("#setupSimulationLink").click(function() {
                 $.ajax({
                     url:"simulation/setup",
@@ -26,34 +18,38 @@
                     }});
             });
 
-            $("#loadRobotsLink").click(function() {
-                $.ajax({
-                    url:"simulation/scene/robots",
-                    success:function(data) {
-                        $("#messages").html(data)
-                    }});
-            });
+            $("#loadRobotsLink").click(updateScene);
 
-            drawCanvas();
-         });
+            draw = new DrawCanvas("botBallCanvas");
+            simulation = new Simulation();
+            simulation.start();
+        });
+        
     </script>
-    <style type="text/css">
-         canvas { border: 1px solid black; }
-    </style>
 </head>
 <body>
 
-    <h1>Botball Simulation</h1>
-    <p id="simulationStatus">Simulation not configured</p>
-    <p id="messages"></p>
+    <div id="pageContainer">
+        <div id="pageContent">
+            <h1>Botball Simulation</h1>
+            <p>
+                <span id="simulationStatus">Simulation not configured</span> |
+                <span id="messages"></span>
 
-    <p>
-        <a id="setupSimulationLink" href="#">Setup the test</a> |
-        <a id="loadRobotsLink" href="#">Retrieve robots</a>
-    </p>
-    <div id="canvasBox">
-        <canvas id="botBallCanvas" width="400" height="300"></canvas>
+            </p>
+            <p>
+                <a id="setupSimulationLink" href="#">Setup the test</a> |
+                <a id="loadRobotsLink" href="#">Retrieve robots</a>
+            </p>
+            <div id="canvasBox">
+                <canvas id="botBallCanvas" width="480" height="400"></canvas>
+            </div>
+        </div>
+        <div id="pageFooter">
+            BotBall: Check <a href="https://github.com/ekarlsso/Botball-Simulator">github</a>
+        </div>
     </div>
+
 
 </body>
 </html>

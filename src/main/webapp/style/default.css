@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#botBallCanvas {
+    border: 1px solid black;
+}
+
+#pageContainer {
+    margin: 0 auto;
+    width: 500px;
+    background:#FFFFFF;
+}
+
+#pageContent {
+    clear: left;
+}
+
+#pageContent h1 {
+
+    font-size: 24px;
+}
+
+#canvasBox {
+    margin: 0 auto;
+    width:482; //borders
+}
+
+#pageFooter {
+    background: #EEE;
+    text-align: right;
+    margin-top: 5px;
+    padding: 10px;
+    height: 50px;
+}
