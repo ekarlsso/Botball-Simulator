@@ -7,51 +7,60 @@ case class StartClock(initialTime:Long)
 case class StopClock()
 case class TimeTick(time: Long, timeDiff: Long)
 case class GetCurrentTime()
-case class AddSimulant(simulant:ActorRef)
+case class RegisterSimulator(simulant:ActorRef)
 case class TimeTickReady(time:Long)
 
 
 class Clock extends Actor {
 
-  private var running = false
-  private var currentTime: Long = 0;
-  private var previousTime: Long = 0;
-  private var simulants:List[ActorRef] = List()
+  private val timeTickInMilliSeconds = 250
+  private var previousTickInMSeconds: Long = 0
 
-  def addSimulant(simulant:ActorRef) = simulants = simulant :: simulants
- 
+
+  private var running = false
+  private var currentTimeTick: Long = 0;
+  private var previousTimeTick: Long = 0;
+  private var simulator: ActorRef = null
+
   def sendTimeTick() =
-    simulants.foreach((a:ActorRef) => {
-      a ! TimeTick(currentTime, currentTime - previousTime)
-    })
+    if (simulator != null) {
+      previousTickInMSeconds = System.currentTimeMillis()
+      simulator ! TimeTick(currentTimeTick, currentTimeTick - previousTimeTick)
+    }
 
   def receive = {
-    case StartClock(initialTime) =>
+    case StartClock(initialTime) => {
       if (!running) {
         running = true
-        currentTime = initialTime
-        previousTime = initialTime
+        previousTimeTick = initialTime
+        previousTimeTick = initialTime
         sendTimeTick()
       }
-
-    case StopClock => running = false
-
-    case AddSimulant(simulant) => 
-      addSimulant(simulant)
-
-    case GetCurrentTime =>
+    }
+    case event: StopClock => running = false
+    case RegisterSimulator(simulant) =>simulator = simulant
+    case event: GetCurrentTime =>
       if (running) {
-        self.reply(TimeTick(currentTime, currentTime - previousTime))
-        previousTime = currentTime
+        self.reply(TimeTick(currentTimeTick, currentTimeTick - previousTimeTick))
       } else {
         self.reply(ClockNotStarted)
       }
+    case TimeTickReady(value) => {
+        if (running) {
 
-    case TimeTickReady(value) =>
-      if (value == currentTime) {
-        
-      }
-      
+          if (value == currentTimeTick) {
+            previousTimeTick = currentTimeTick
+            currentTimeTick += 1
+
+            var timeDiff = System.currentTimeMillis - previousTickInMSeconds
+            if (timeDiff < timeTickInMilliSeconds) {
+              Thread.sleep(timeTickInMilliSeconds - timeDiff)
+            }
+
+            sendTimeTick() //we could put here a small wait before sending it...
+          }
+        }
+    }
     case _ => log.error("Clock got unknown message")
   }
 }

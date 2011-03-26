@@ -133,7 +133,7 @@ trait SimulationManagement  {
 
     simulationRunning = true
 
-    clock ! AddSimulant(actorRef)
+    clock ! RegisterSimulator(actorRef)
     clock ! StartClock(0)
   }
 
@@ -154,8 +154,8 @@ trait SimulationManagement  {
 
   def simulationManagement: Actor.Receive = {
     case event: TimeTick => simulationClockTick(event)
-    case StartSimulation => startSimulation()
-    case StopSimulation => stopSimulation()
+    case event: StartSimulation => startSimulation()
+    case event: StopSimulation => stopSimulation()
   }
 
   def updateSimulationState(timeTick: TimeTick)
@@ -169,7 +169,7 @@ trait SimulationManagement  {
 trait UnknownEventManagement {
   this: Actor =>
   def unknownEventManagement: Actor.Receive = {
-    case _ => log.error("Unkown event received by Simulation")
+    case e:Any => log.error("Unkown event received by Simulation:" + e)
   }
 }
 

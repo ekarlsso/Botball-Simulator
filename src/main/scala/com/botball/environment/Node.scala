@@ -72,7 +72,7 @@ abstract class Node(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2) extends Def
   def nodeId = id
 
   /**
-   * Position of the node in the  scene
+   * Center position of the node in the  scene
    */
   def position = pos
 
@@ -122,12 +122,12 @@ abstract class Node(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2) extends Def
 class RobotNode(id: NodeId,
                 pos: Vec2 = Vec2(0,0),
                 rot: Double = 0.0,
-                bbBox: Vec2 = Vec2(30.0, 30.0))
+                bbBox: Vec2 = Vec2(31.0, 31.0))
   extends Node(id, pos, rot, bbBox)
   with ForwardCommandHandler
   with RotateCommandHandler {
 
-  override def rotationSpeed = 2.0
+  override def rotationSpeed = 90.0 //Rotates always one step
 
   override def velocity = 2.0
 
