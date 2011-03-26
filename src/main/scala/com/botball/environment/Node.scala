@@ -3,9 +3,12 @@ package com.botball.environment
 import com.botball.math._
 
 case class NodeId(value:Long)
-case class MoveForwardCommand()
-case class RotateLeftCommand()
-case class RotateRightCommand()
+
+abstract class Command
+
+class MoveForwardCommand() extends Command
+class RotateLeftCommand() extends Command
+class RotateRightCommand() extends Command
 
 
 trait ForwardCommandHandler {
@@ -132,16 +135,4 @@ class RobotNode(id: NodeId,
 
   override protected def createNewNode(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2): Node =
     new RobotNode(id, pos, rot, bbBox)
-}
-
-trait NodeFactor {
-
-  var uniqueIdCounter = 0;
-
-  def createNode(position: Vec2 = Vec2(0.0, 0.0),
-                 rotation: Double = 0.0,
-                 bbBox: Vec2 = Vec2(30.0, 30.0)): Node = {
-    uniqueIdCounter += 1;
-    new RobotNode(NodeId(uniqueIdCounter), position, rotation, bbBox);
-  }
 }

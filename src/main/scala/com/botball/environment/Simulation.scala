@@ -28,6 +28,7 @@ trait SceneManagement {
     robots = event.robot :: robots
 
     val node = createRobotNode(event)
+
     robotsMap += (node.nodeId -> event.robot)
     scene.registerNode(node)
 
@@ -85,9 +86,10 @@ trait SceneManagement {
     actor ! sensorData
   }
 
-  def createRobotNode(robot:RegisterRobot) : Node = {
-    nodeFactor.createNode(Vec2(robot.position._1, robot.position._2))
-  }
+  def createRobotNode(robot: RegisterRobot) : Node =
+    nodeFactor.createNode(
+      "RobotNode",
+      Vec2(robot.position._1, robot.position._2))
 
   def scene:Scene = simulatedScene
 

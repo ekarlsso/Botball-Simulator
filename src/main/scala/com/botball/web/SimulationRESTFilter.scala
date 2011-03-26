@@ -8,7 +8,8 @@ import java.net.URL
 
 class SimulationRESTFilter extends ScalatraFilter {
 
-  val simulation = Actor.actorOf[Simulation].start
+  val nodeFactor = new DefaultNodeFactor
+  val simulation = Actor.actorOf(new Simulation(nodeFactor)).start
   val robot1 = Actor.actorOf[Robot].start
   val robot2 = Actor.actorOf[Robot].start
 

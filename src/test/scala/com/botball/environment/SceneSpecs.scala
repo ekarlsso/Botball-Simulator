@@ -1,18 +1,12 @@
 package com.botball.environment
 
-import akka.util.TestKit
-import akka.util.duration._
-import akka.actor._
-import akka.actor.Actor.actorOf
 import org.specs._
 import org.specs.runner.JUnit4
 import org.specs.mock.Mockito
 import org.mockito.Matchers._
-
+import com.botball.math._
 
 class SceneSpecAsTests extends JUnit4(SceneSpecs)
-
-//object ClockSpecs extends Specification with Mockito  with TestKit {
 
 object SceneSpecs extends Specification with Mockito {
 
@@ -20,42 +14,63 @@ object SceneSpecs extends Specification with Mockito {
 
     "Register and Unregister nodes in scene" in {
 
-      // TODO: Fix after the node is in shape!!
-      /*
       val scene = new Scene
 
-      val node1Mock = mock[Node]
-      val node2Mock = mock[Node]
+      scene.registerNode(testNode(NodeId(0)))
+      scene.findNode(NodeId(0)) must notBeNull
 
-      val nodes1 = scene.registerNode(node1Mock)
-      nodes1.contains(node1Mock) must beTrue
+      scene.registerNode(testNode(NodeId(1)))
+      scene.findNode(NodeId(1)) must notBeNull
 
-      val nodes2 = scene.registerNode(node2Mock)
-      nodes2.contains(node1Mock) must beTrue
-      nodes2.contains(node2Mock) must beTrue
+      scene.nodes.length must_== 2
 
-      val nodes3 = scene.unRegisterNode(node1Mock)
-      nodes3.contains(node1Mock) must beFalse
+      scene.unRegisterNode(NodeId(0))
+      scene.findNode(NodeId(0)) must beNull
+      scene.nodes.length must_== 1
 
-      val nodes4 = scene.unRegisterNode(node2Mock)
-      nodes4.contains(node2Mock) must beFalse
-
-      */
+      scene.unRegisterNode(NodeId(1))
+      scene.findNode(NodeId(1)) must beNull
+      scene.nodes.length must_== 0
     }
 
-    "Advance nodes inside the scene with time tick" in {
-/*      val scene = new Scene
-      val node1Mock = mock[Animated]
-      val node2Mock = mock[Animated]
+    "accept posted command for node" in {
 
-      scene.registerNode(node1Mock)
-      scene.registerNode(node2Mock)
+      val scene = new Scene
+      var command = new MoveForwardCommand()
 
-      scene.updateScene(0, 0)
+      scene.registerNode(testNode(NodeId(0)))
+      scene.postCommand(command, NodeId(0))
+      scene.nodeCommands.size must_== 1
+      scene.nodeCommands(NodeId(0)).contains(command) must beTrue
+    }
 
-      there was one(node1Mock).evaluate(0,0)
-      there was one(node2Mock).evaluate(0,0)
-      */
+    "Advance node inside the scene with time tick" in {
+
+      val scene = new Scene
+      var command = new MoveForwardCommand()
+
+      scene.registerNode(testNode(NodeId(0), 20, Vec2(5.0, 3.0)))
+      scene.postCommand(command, NodeId(0))
+      scene.nodeCommands(NodeId(0)).contains(command) must beTrue
+
+      scene.updateScene(TimeTick(10, 10))
+
+      scene.nodeCommands.contains(NodeId(0)) must beFalse
+      scene.nodes.length must_== 1
+      scene.nodeCommands.size must_== 0
+
+      scene.nodes.head.position.x must_== 205.0
+      scene.nodes.head.position.y must_== 3.0
+    }
+  }
+
+  def testNode(nodeId: NodeId = NodeId(0),
+               velo: Double = 0.0,
+               position: Vec2 = Vec2(0.0, 0.0),
+               rotation: Double = 0.0): Node = {
+    new RobotNode(nodeId, position, rotation) {
+      override def velocity = velo
+      override def rotationSpeed = 10.0
     }
   }
 }
