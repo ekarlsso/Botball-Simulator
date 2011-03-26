@@ -1,9 +1,9 @@
 package com.botball.environment
 
+import com.botball.math._
 import scala.collection.immutable.HashMap
 import akka.actor.ActorRef
 import akka.actor._
-import scalala.tensor.dense.DenseVector
 
 case class StartSimulation()
 case class StopSimulation()
@@ -13,12 +13,13 @@ case class GetSceneRobots()
 
 
 /**
- * Manages robot registering and the scene state change related to it.
+ * Manages scene state for simulation and also for the registered robots
  */
-trait RobotRegistryManagement {
+trait SceneManagement {
 
+  private var simulatedScene = new Scene
   private var robots: List[ActorRef] = List()
-  private var robotsMap: HashMap[Node, ActorRef] = new HashMap[Node, ActorRef]
+  private var robotsMap = new HashMap[NodeId, ActorRef]
 
   def registerRobot(event: RegisterRobot): List[ActorRef]  = {
 
@@ -27,7 +28,7 @@ trait RobotRegistryManagement {
     robots = event.robot :: robots
 
     val node = createRobotNode(event)
-    robotsMap = robotsMap + (node -> event.robot)
+    robotsMap += (node.nodeId -> event.robot)
     scene.registerNode(node)
 
     robots
@@ -39,7 +40,7 @@ trait RobotRegistryManagement {
 
     robots = robots.filterNot(robot => robot == event.robot)
 
-    var removedNode:Node = null
+    var removedNode:NodeId = null
     robotsMap = robotsMap.filter( mp => {
       if (mp._2 == event.robot) {
         removedNode = mp._1
@@ -54,39 +55,7 @@ trait RobotRegistryManagement {
     robots
   }
 
-  def sendRobotsReply() {
-    simulation.reply(scene.nodes)
-  }
-
-  def robotRegistryManagement: Actor.Receive = {
-    case event: RegisterRobot => this.registerRobot(event)
-    case event: UnRegisterRobot => this.unRegisterRobot(event)
-    case event: GetSceneRobots => this.sendRobotsReply()
-  }
-
-  def registeredRobots = robots
-
-  def robotForNode(node: Node): ActorRef = robotsMap(node)
-
-  def createRobotNode(robot:RegisterRobot) : Node = {
-    new RobotNode(DenseVector(robot.position._1, robot.position._2))
-  }
-
-  def scene:Scene
-
-  def simulation:ActorRef
-}
-
-/**
- * Manages simulation clock tick
- */
-trait TimeTickManagement  {
-
-  private var simulationRunning = false
-  private var previousTimeTick:TimeTick = new TimeTick(0,0)
-
-  def simulationClockTick(timeTick: TimeTick) {
-
+  def updateSimulationState(timeTick: TimeTick) {
     scene.updateScene(timeTick)
 
     scene.readSensorData.foreach(data => {
@@ -97,78 +66,108 @@ trait TimeTickManagement  {
       sendSensorData(robotRef, sensorData)
     })
 
-    previousTimeTick = timeTick
-
-    informRegisteredRobots(timeTick)
-
-    replyToClockTick(timeTick)
+    informRobots(timeTick)
   }
 
-  def timeTickManagement: Actor.Receive = {
-    case event: TimeTick => simulationClockTick(event)
+  def sendRobotsReply() {
+    actorRef.reply(scene.nodes)
   }
+
+  def informRobots(timeTick: TimeTick) {
+    registeredRobots.foreach(robot => robot ! timeTick)
+  }
+
+  def registeredRobots = robots
+
+  def robotForNode(node: Node): ActorRef = robotsMap(node.nodeId)
 
   def sendSensorData(actor: ActorRef, sensorData: List[SensorData]) {
     actor ! sensorData
   }
 
-  def informRegisteredRobots(timeTick: TimeTick) {
-    registeredRobots.foreach(robot => robot ! timeTick)
+  def createRobotNode(robot:RegisterRobot) : Node = {
+    nodeFactor.createNode(Vec2(robot.position._1, robot.position._2))
+  }
+
+  def scene:Scene = simulatedScene
+
+  def sceneManagement: Actor.Receive = {
+    case event: RegisterRobot => this.registerRobot(event)
+    case event: UnRegisterRobot => this.unRegisterRobot(event)
+    case event: GetSceneRobots => this.sendRobotsReply()
+  }
+
+  def actorRef: ActorRef
+
+  def nodeFactor: NodeFactor
+}
+
+/**
+ * Manages simulation clock tick. This includes listening to the simulation
+ * internal clock and informing the other parts of the simulation (like robot
+ * actors and the Scene) that new clock tick has happened.
+ *
+ * Controls also starting and shutdown of the simulation
+ */
+trait SimulationManagement  {
+
+  private var simulationRunning = false
+  private var simulationClock = Actor.actorOf[Clock].start
+  private var previousTimeTick = new TimeTick(0,0)
+
+  def simulationClockTick(timeTick: TimeTick) {
+
+    updateSimulationState(timeTick)
+
+    previousTimeTick = timeTick
+
+    replyToClockTick(timeTick)
+  }
+
+  def startSimulation() {
+    if (isSimulationRunning) {
+      clock ! StopClock()
+    }
+
+    simulationRunning = true
+
+    clock ! AddSimulant(actorRef)
+    clock ! StartClock(0)
+  }
+
+  def stopSimulation() {
+    if (!isSimulationRunning) return
+
+    clock ! StopClock();
+    simulationRunning = false
   }
 
   def replyToClockTick(timeTick: TimeTick) {
     clock ! TimeTickReady(timeTick.time)
   }
 
-  def registeredRobots: List[ActorRef]
+  def isSimulationRunning = simulationRunning
 
-  def robotForNode(node: Node): ActorRef
-
-  def clock: ActorRef
-
-  def scene: Scene
-}
-
-/**
- * Manages common simulation events. This include Start and Stop events
- */
-trait SimulationManagement {
-
-  var simulationRunning = false
-
-  def startSimulation() {
-    if (simulationRunning) return
-
-    simulationRunning = true
-    clock.start
-
-    clock ! AddSimulant(simulation)
-    clock ! StartClock(0)
-  }
-
-  def stopSimulation() {
-    if (!simulationRunning) return
-
-    simulationRunning = false
-    clock.stop
-  }
+  def clock: ActorRef = simulationClock
 
   def simulationManagement: Actor.Receive = {
+    case event: TimeTick => simulationClockTick(event)
     case StartSimulation => startSimulation()
     case StopSimulation => stopSimulation()
   }
 
-  def clock: ActorRef
+  def updateSimulationState(timeTick: TimeTick)
 
-  def simulation: ActorRef
+  def actorRef: ActorRef
 }
 
 /**
  * Manages unknown events.
  */
 trait UnknownEventManagement {
+  this: Actor =>
   def unknownEventManagement: Actor.Receive = {
-    case _ => println("Unkown event received by Simulation")
+    case _ => log.error("Unkown event received by Simulation")
   }
 }
 
@@ -176,22 +175,17 @@ trait UnknownEventManagement {
  * Manages the simulation. Stores the simulation state and keeps track of the
  * registered robots to the simulation
  */
-class Simulation extends Actor
-  with TimeTickManagement
-  with RobotRegistryManagement
+class Simulation(nodeFac: NodeFactor) extends Actor
+  with SceneManagement
   with SimulationManagement
   with UnknownEventManagement {
 
-  private var simulatedScene:Scene = new Scene
-  private var simulationClock:ActorRef = Actor.actorOf[Clock]
+  def actorRef: ActorRef = this.self
 
-  def scene:Scene = simulatedScene
-  def clock:ActorRef = simulationClock
-  def simulation:ActorRef = this.self
+  def nodeFactor: NodeFactor = nodeFac
 
   def receive =
-    robotRegistryManagement orElse
-    timeTickManagement orElse
+    sceneManagement orElse
     simulationManagement orElse
     unknownEventManagement
 }

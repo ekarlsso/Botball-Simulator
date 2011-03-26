@@ -13,13 +13,13 @@ class Scene {
     sceneNodes
   }
 
-  def unRegisterNode(node:Node): List[Node] = {
-    sceneNodes = sceneNodes.filterNot(n => n == node)
+  def unRegisterNode(nodeId:NodeId): List[Node] = {
+    sceneNodes = sceneNodes.filterNot(n => n.nodeId == nodeId)
     sceneNodes
   }
 
   def updateScene(timetick:TimeTick) {
-    sceneNodes = sceneNodes.map(node => node.evaluate(timetick))
+    //sceneNodes = sceneNodes.map(node => node.evaluate(timetick, ))
   }
 
   def readSensorData(): List[(Node, List[SensorData])] = {

@@ -18,17 +18,19 @@
                     }});
             });
 
+            $("#startSimulation").click(function(){
+                simulation.start();
+            });
+
             $("#loadRobotsLink").click(updateScene);
 
             draw = new DrawCanvas("botBallCanvas");
             simulation = new Simulation();
-            simulation.start();
         });
         
     </script>
 </head>
 <body>
-
     <div id="pageContainer">
         <div id="pageContent">
             <h1>Botball Simulation</h1>
@@ -38,6 +40,7 @@
 
             </p>
             <p>
+                <a id="startSimulation" href="#">Start Simulation</a> |
                 <a id="setupSimulationLink" href="#">Setup the test</a> |
                 <a id="loadRobotsLink" href="#">Retrieve robots</a>
             </p>
@@ -49,7 +52,5 @@
             BotBall: Check <a href="https://github.com/ekarlsso/Botball-Simulator">github</a>
         </div>
     </div>
-
-
 </body>
 </html>
