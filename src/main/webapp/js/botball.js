@@ -16,7 +16,44 @@ function Simulation() {
 }
 
 Simulation.prototype.start = function() {
-    this.interval = setInterval("updateScene()", 1000);
+
+    if (this.interval == null) {
+        this.sendStartSimulation();
+        this.interval = setInterval("updateScene()", 1000);
+    }
+}
+
+Simulation.prototype.stop = function() {
+
+    if (this.interval != null) {
+        clearInterval(this.interval);
+        this.sendStopSimulation();
+        this.interval = null;
+    }
+}
+
+Simulation.prototype.sendStartSimulation = function() {
+    $.ajax({
+        url:"simulation/start",
+        dataType:"json",
+        success:function(data) {
+            $("#messages").html(data.message)
+        }
+    });
+}
+
+Simulation.prototype.sendStopSimulation = function() {
+    $.ajax({
+        url:"simulation/stop",
+        dataType:"json",
+        success:function(data) {
+            $("#messages").html(data.message)
+        }
+    });
+}
+
+function handleMessage(msg) {
+    $("#simulationStatus").html(msg.message)
 }
 
 function drawRobot(robot) {

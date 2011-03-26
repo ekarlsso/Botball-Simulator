@@ -90,7 +90,7 @@ abstract class Node(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2) extends Def
    * Returns JSON representation of the node
    */
   def toJSON =
-    "{\"type\": \"Node\", "+
+    "{\"type\": \""+nodeType+"\", "+
     "\"position\":["+position(0)+ ", "+position(1)+"], " +
     "\"rotation\":"+rotation+", " +
     "\"boundingBox\":["+boundingBox(0)+ ", "+boundingBox(1)+"]}"
@@ -115,6 +115,8 @@ abstract class Node(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2) extends Def
     if (handlesCommand(command)) handleCommand(command)(timeTick) else this
 
   protected def createNewNode(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2): Node
+
+  protected def nodeType: String = "Node"
 }
 
 class RobotNode(id: NodeId,
@@ -135,4 +137,6 @@ class RobotNode(id: NodeId,
 
   override protected def createNewNode(id: NodeId, pos: Vec2, rot: Double, bbBox: Vec2): Node =
     new RobotNode(id, pos, rot, bbBox)
+
+  override protected def nodeType: String = "RobotNode"
 }

@@ -18,17 +18,12 @@ class Clock extends Actor {
   private var previousTime: Long = 0;
   private var simulants:List[ActorRef] = List()
 
-  def addSimulant(simulant:ActorRef) = {
-    simulants = simulant :: simulants
-  }
-
-  def addRobot(robot:Robot) = {
-    
-  }
-
-  def sendTimeTick() {
-    simulants.foreach( (a:ActorRef) => {a ! TimeTick(currentTime, currentTime - previousTime)})
-  }
+  def addSimulant(simulant:ActorRef) = simulants = simulant :: simulants
+ 
+  def sendTimeTick() =
+    simulants.foreach((a:ActorRef) => {
+      a ! TimeTick(currentTime, currentTime - previousTime)
+    })
 
   def receive = {
     case StartClock(initialTime) =>

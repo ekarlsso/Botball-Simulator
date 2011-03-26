@@ -24,30 +24,21 @@ class SimulationRESTFilter extends ScalatraFilter {
 
       simulationSetuped = true
 
-      "Simulation setuped"
-
+      statusMessage("ok", "Simulation setup done")
     } else {
-      "Simulation already setuped!"
+      statusMessage("ok", "Simulation already have a setup")
     }
   }
 
   get("/simulation/start") {
     simulation ! StartSimulation()
-    "Simulation started"
+    statusMessage("ok", "Simulation started")
   }
 
   get("/simulation/stop") {
     simulation ! StopSimulation()
-    "Simulation stopped"
+    statusMessage("ok", "Simulation stopped")
   }
-
-
-  /*
-  post("/simulation/robot") {
-
-    
-
-  }*/
 
   get("/simulation/scene/robots") {
     (simulation !! (GetSceneRobots(), 1000))  match {
@@ -56,4 +47,8 @@ class SimulationRESTFilter extends ScalatraFilter {
       case _ => "{\"status\": \"Error: couldn't retrieve robots\"}"
     }
   }
+
+  protected def statusMessage(status: String, message: String): String =
+    "{\"status\":\""+status+"\", "+
+     "\"message\":\""+message+"\"}"
 }

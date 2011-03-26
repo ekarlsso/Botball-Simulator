@@ -10,16 +10,26 @@
         var simulation = null;
 
         $(document).ready(function() {
+
             $("#setupSimulationLink").click(function() {
                 $.ajax({
                     url:"simulation/setup",
+                    dataType: "json",
                     success:function(data) {
-                        $("#simulationStatus").html(data)
+                        $("#simulationStatus").html(data.message)
                     }});
             });
 
             $("#startSimulation").click(function(){
                 simulation.start();
+                $("#startSimulation").hide();
+                $("#stopSimulation").show();
+            });
+
+            $('#stopSimulation').click(function() {
+                simulation.stop();
+                $("#stopSimulation").hide();
+                $("#startSimulation").show();
             });
 
             $("#loadRobotsLink").click(updateScene);
@@ -36,14 +46,22 @@
             <h1>Botball Simulation</h1>
             <p>
                 <span id="simulationStatus">Simulation not configured</span> |
-                <span id="messages"></span>
+                <span id="messages">no message</span>
 
             </p>
             <p>
-                <a id="startSimulation" href="#">Start Simulation</a> |
-                <a id="setupSimulationLink" href="#">Setup the test</a> |
+                <a id="startSimulation" href="#">Start Simulation</a>
+                <a id="stopSimulation" href="#" style="display: none">Stop Simulation</a> |
+                
+                <a id="setupSimulationLink" href="#">Create Demo Setup</a> |
                 <a id="loadRobotsLink" href="#">Retrieve robots</a>
             </p>
+
+            <div class="formBox">
+                <input type="text"/>
+                <input type="submit"/>
+            </div>
+
             <div id="canvasBox">
                 <canvas id="botBallCanvas" width="480" height="400"></canvas>
             </div>
