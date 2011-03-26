@@ -39,7 +39,7 @@ object RobotNodeSpecs extends Specification {
         .position.toList must beEqualTo(Vec2(-16.0, 2.0).toList)
     }
 
-    "move straight together with rotations" in {
+    "move straight after rotation" in {
       val position =
         testNode(1.0, Vec2(3.0, 5.0), 90.0)
           .evaluate(timeDiff(4), new MoveForwardCommand()).position
@@ -47,14 +47,26 @@ object RobotNodeSpecs extends Specification {
       position.x must beCloseTo(3.0, 0.001)
       position.y must beCloseTo(9.0, 0.001)
 
-      /*
-      val position =
+      val position2 =
         testNode(1.0, Vec2(3.0, 5.0), 45.0)
           .evaluate(timeDiff(4), new MoveForwardCommand()).position
 
-      position.x must beCloseTo(3.0, 0.001)
-      position.y must beCloseTo(9.0, 0.001)
-      */
+      position2.x must beCloseTo(3.0+2.8284, 0.001)
+      position2.y must beCloseTo(5.0+2.8284, 0.001)
+
+      val position3 =
+        testNode(1.0, Vec2(3.0, 5.0), -45.0)
+          .evaluate(timeDiff(4), new MoveForwardCommand()).position
+
+      position3.x must beCloseTo(3.0+2.8284, 0.001)
+      position3.y must beCloseTo(5.0-2.8284, 0.001)
+    }
+
+    "rotate" in {
+      testNode(1.0, Vec2(3.0, 5.0))
+        .evaluate(timeDiff(4), new RotateLeftCommand())
+        .rotation must beCloseTo(10.0*4, 0.001)
+
     }
   }
 
@@ -63,6 +75,7 @@ object RobotNodeSpecs extends Specification {
                rotation: Double = 0.0): Node = {
     new RobotNode(NodeId(0), position, rotation) {
       override def velocity = velo
+      override def rotationSpeed = 10.0
     }
   }
 

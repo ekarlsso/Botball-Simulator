@@ -28,8 +28,6 @@ trait ForwardCommandHandler {
     val velocityVec =
       Vec2(1.0, 0).rotate(radianAngle) multiply (velocity * timeTick.timeDiff)
 
-    println("Velocity vec: " + velocityVec.toList.toString)
-
     this.position add velocityVec
   }
 
@@ -42,7 +40,7 @@ trait RotateCommandHandler {
 
   this: Node =>
 
-  protected def rotationSpeed: Double = 0.0
+  def rotationSpeed: Double = 0.0
 
   protected def rotate(timeTick: TimeTick, newRotation: Double): Node = {
     createNewNode(
