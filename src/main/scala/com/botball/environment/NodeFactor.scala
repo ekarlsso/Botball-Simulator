@@ -6,7 +6,7 @@ trait NodeFactor {
   def createNode(nodeType: String,
                  position: Vec2  = Vec2(0.0, 0.0),
                  rotation: Double = 0.0,
-                 boundingBox: Vec2 = Vec2(30.0, 30.0)): Node
+                 boundingBox: Vec2 = Vec2(31.0, 31.0)): Node
 }
 
 class DefaultNodeFactor extends NodeFactor {

@@ -10,6 +10,10 @@ class Scene {
   var sceneNodes: List[Node] = List()
   var commands = new HashMap[NodeId, List[Command]]
 
+  def width: Double = 480
+  
+  def height: Double = 350
+
   def registerNode(node: Node): List[Node] = {
 
     if (findNode(node.nodeId) != null) return sceneNodes

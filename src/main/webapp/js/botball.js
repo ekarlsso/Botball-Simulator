@@ -6,7 +6,7 @@ function DrawCanvas(canvasName) {
 DrawCanvas.prototype.drawRobot = function(x, y, w, h, angle) {
     this.context.save();
     this.context.rotate(angle)
-    this.context.fillStyle = "rgb(20,0,0)";
+    this.context.fillStyle = "#35372E";
     this.context.fillRect(x, y, w, h);
     this.context.restore();
 }
@@ -63,6 +63,9 @@ function drawRobot(robot) {
 
     var width = robot.boundingBox[0];
     var height = robot.boundingBox[0];
+
+    x = x - (width/2)-1;
+    y = y - (height/2)-1;
 
     var rotation = robot.rotation;
     var rotationRadians = (3.14 * rotation/180.0);

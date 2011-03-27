@@ -1,19 +1,25 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    margin: 0px;
+    padding: 0px;
 }
 
-#botBallCanvas {
-    border: 1px solid black;
-}
+
 
 #pageContainer {
     margin: 0 auto;
-    width: 500px;
-    background:#FFFFFF;
+    width: 710px;
+    background: #FFFFFF;
 }
 
 #pageContent {
+    width: 710px;
+    height: 681px;
     clear: left;
+    background-image: url(../pics/roboball.jpg);
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 #pageContent h1 {
@@ -23,7 +29,16 @@ body {
 
 #canvasBox {
     margin: 0 auto;
-    width:482; //borders
+    width:482px; //borders
+    height:350px;
+    background: #625f5A;
+    position: relative;
+    top:60px;
+    left: -2px;
+}
+
+#botBallCanvas {
+    border: 1px solid #514f4a;
 }
 
 #pageFooter {
@@ -32,6 +47,13 @@ body {
     margin-top: 5px;
     padding: 10px;
     height: 50px;
+}
+
+#commands {
+    margin: 0 auto;
+    width: 480px;
+    position: relative;
+    top: 320px;
 }
 
 .formBox {

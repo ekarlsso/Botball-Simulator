@@ -19,8 +19,8 @@ class SimulationRESTFilter extends ScalatraFilter {
 
     if (!simulationSetuped) {
 
-      simulation ! RegisterRobot(robot1)
-      simulation ! RegisterRobot(robot2, (50,50))
+      simulation ! RegisterRobot(robot1, (40, 40))
+      simulation ! RegisterRobot(robot2, (90, 90))
 
       simulationSetuped = true
 
